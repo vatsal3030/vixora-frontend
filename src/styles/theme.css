@@ -1,0 +1,46 @@
+/* Theme Variables */
+:root {
+  --primary: #ef4444;
+  --primary-soft: rgba(239, 68, 68, 0.2);
+  --grid-columns: 4;
+  --font-size-base: 16px;
+}
+
+/* Theme Color Classes */
+.theme-red { --primary: #ef4444; }
+.theme-orange { --primary: #f97316; }
+.theme-amber { --primary: #eab308; }
+.theme-blue { --primary: #3b82f6; }
+.theme-sky { --primary: #0ea5e9; }
+.theme-indigo { --primary: #6366f1; }
+.theme-purple { --primary: #8b5cf6; }
+.theme-pink { --primary: #ec4899; }
+.theme-teal { --primary: #14b8a6; }
+.theme-green { --primary: #22c55e; }
+.theme-lime { --primary: #84cc16; }
+
+/* Video Grid */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), 1fr);
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Compact Mode */
+.compact-mode .video-card {
+  padding: 0.5rem;
+}
+
+.compact-mode .card {
+  padding: 0.75rem;
+}
+
+/* Smooth Transitions */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+}
