@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.getCurrentUser()
       setUser(response.data.data)
     } catch (error) {
-      console.error('Auth check failed:', error)
+      // Don't log auth check failures to avoid spam
       setUser(null)
     } finally {
       setLoading(false)
