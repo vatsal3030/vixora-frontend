@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { feedService, subscriptionService } from '../api/services'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import VideoGrid from '../components/VideoGrid'
 import VideoCardSkeleton from '../components/VideoCardSkeleton'
 import ChannelCardSkeleton from '../components/ChannelCardSkeleton'
@@ -15,6 +16,8 @@ const Subscriptions = () => {
   const [loading, setLoading] = useState(true)
   const [channelsLoading, setChannelsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useDocumentTitle('Subscriptions')
 
   useEffect(() => {
     fetchSubscriptionVideos()

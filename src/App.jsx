@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { SidebarProvider } from './context/SidebarContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { ToastProvider } from './components/ui/toast'
+import { Toaster } from './components/ui/sonner'
 import MainLayout from './layouts/MainLayout'
 import Home from './pages/Home'
 import Video from './pages/Video'
@@ -12,6 +13,8 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import EmailVerification from './pages/EmailVerification'
 import VerifyOtp from './pages/VerifyOtp'
+import RestoreAccount from './pages/RestoreAccount'
+import EditVideo from './pages/EditVideo'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Trending from './pages/Trending'
@@ -56,11 +59,13 @@ function App() {
     <ToastProvider>
       <SettingsProvider>
         <SidebarProvider>
+          <Toaster />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/email-verification" element={<EmailVerification />} />
             <Route path="/verify-otp" element={<VerifyOtp />} />
+            <Route path="/restore-account" element={<RestoreAccount />} />
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Home />} />
               <Route path="shorts" element={<Shorts />} />
@@ -75,6 +80,7 @@ function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="search" element={<Search />} />
               <Route path="video/:videoId" element={<Video />} />
+              <Route path="video/:videoId/edit" element={<EditVideo />} />
               <Route path="channel/:channelId" element={<Channel />} />
               <Route path="*" element={<ChannelRouter />} />
               <Route path="upload" element={<Upload />} />

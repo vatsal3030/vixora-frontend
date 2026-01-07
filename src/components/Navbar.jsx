@@ -118,20 +118,31 @@ const Navbar = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-7 w-7 rounded-full p-0">
-                <Avatar className="h-7 w-7">
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
+                <Avatar className="h-9 w-9">
                   <AvatarImage src={user?.avatar} alt={user?.fullName} />
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="text-sm">
                     {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
-              <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{user?.fullName}</p>
-                  <p className="w-[200px] truncate text-sm text-muted-foreground">
+              <div className="flex items-center justify-start gap-3 p-2">
+                <button 
+                  onClick={() => navigate(`/@${user?.username}`)}
+                  className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                    <AvatarFallback className="text-sm">
+                      {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+                <div className="flex flex-col space-y-1 leading-none min-w-0">
+                  <p className="font-medium truncate">{user?.fullName}</p>
+                  <p className="truncate text-sm text-muted-foreground">
                     {user?.email}
                   </p>
                 </div>

@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState, useRef, useCallback } from 'react'
+import { useAuth } from '../hooks/useAuth'
+import { videoService } from '../api/services'
 import { Card, CardContent } from './ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
@@ -12,8 +14,9 @@ import {
 } from './ui/dropdown-menu'
 import { formatDate } from '../utils/formatDate'
 import { formatDuration, formatViews } from '../utils/videoUtils'
-import { Eye, Clock, MoreVertical, Plus, ListPlus, Share, Copy, ExternalLink, Play, Pause, Volume2, VolumeX } from 'lucide-react'
+import { Eye, Clock, MoreVertical, Plus, ListPlus, Share, Copy, ExternalLink, Play, Pause, Volume2, VolumeX, Edit, Trash2 } from 'lucide-react'
 import PlaylistModal from './PlaylistModal'
+import { toast } from 'sonner'
 
 const VideoCard = ({ 
   video, 
@@ -21,8 +24,11 @@ const VideoCard = ({
   showProgress = true, 
   showViews = true, 
   showChannel = true, 
-  compact = false 
+  compact = false,
+  showEditButton = false,
+  onVideoDeleted
 }) => {
+  const { user } = useAuth()
   const [showPreview, setShowPreview] = useState(false)
   const [showPlaylistModal, setShowPlaylistModal] = useState(false)
   const [message, setMessage] = useState('')
@@ -43,7 +49,6 @@ const VideoCard = ({
     
     switch (platform) {
       case 'whatsapp':
-        // WhatsApp works better with URL on separate line
         const whatsappText = `Check out this video: ${video.title}\n\n${videoUrl}`
         window.open(`https://wa.me/?text=${encodeURIComponent(whatsappText)}`, '_blank')
         break
@@ -56,10 +61,24 @@ const VideoCard = ({
         break
       case 'copy':
         navigator.clipboard.writeText(videoUrl)
-        setMessage('Link copied to clipboard!')
+        toast.success('Link copied to clipboard!')
         break
       default:
         break
+    }
+  }
+
+  const handleDeleteVideo = async () => {
+    if (!confirm('Are you sure you want to delete this video?')) return
+    
+    try {
+      await videoService.deleteVideo(video.id)
+      toast.success('Video deleted successfully')
+      if (onVideoDeleted) {
+        onVideoDeleted(video.id)
+      }
+    } catch (error) {
+      toast.error('Failed to delete video')
     }
   }
 
@@ -258,6 +277,21 @@ const VideoCard = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {showEditButton && user?.id === video.owner?.id && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to={`/video/${video.id}/edit`} className="flex items-center">
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit video
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600" onClick={handleDeleteVideo}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete video
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem 
                   onClick={(e) => {
                     e.preventDefault()

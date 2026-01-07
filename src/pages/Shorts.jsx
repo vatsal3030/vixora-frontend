@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { feedService, likeService, commentService, subscriptionService } from '../api/services'
 import { useAuth } from '../hooks/useAuth'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useSidebar } from '../context/SidebarContext'
 import { Button } from '../components/ui/button'
 import { Textarea } from '../components/ui/textarea'
@@ -41,6 +42,8 @@ const Shorts = () => {
   const containerRef = useRef(null)
   const videoRefs = useRef({})
   const observerRef = useRef(null)
+
+  useDocumentTitle(shorts[currentIndex]?.title)
 
   useEffect(() => {
     const initShorts = async () => {

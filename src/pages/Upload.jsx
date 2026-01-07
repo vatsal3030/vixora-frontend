@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { videoService } from '../api/services'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Textarea } from '../components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 import { Upload as UploadIcon, Video, Image, Play, Clock, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 const Upload = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +31,8 @@ const Upload = () => {
   const thumbnailInputRef = useRef(null)
 
   const navigate = useNavigate()
+
+  useDocumentTitle('Upload')
 
   // Prevent page refresh/navigation when there are unsaved changes
   useEffect(() => {
@@ -233,6 +237,17 @@ const Upload = () => {
     setError('')
     setUploadProgress(0)
 
+    // Start fake progress animation
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 95) {
+          clearInterval(progressInterval)
+          return 95
+        }
+        return prev + Math.random() * 3 + 1 // Random increment between 1-4
+      })
+    }, 300)
+
     try {
       const uploadData = new FormData()
       uploadData.append('videoFile', videoFile)
@@ -245,24 +260,19 @@ const Upload = () => {
 
       const response = await videoService.uploadVideo(uploadData)
       
-      // Simulate upload progress
-      const interval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(interval)
-            return 90
-          }
-          return prev + 10
-        })
-      }, 200)
-
+      // Complete progress and redirect
+      clearInterval(progressInterval)
       setUploadProgress(100)
+      toast.success('Video uploaded successfully!')
       
-      // Navigate to the uploaded video
-      const videoId = response.data.data.id
-      navigate(`/video/${videoId}`)
+      // Wait a moment to show 100% before redirect
+      setTimeout(() => {
+        const videoId = response.data.data.id
+        navigate(`/video/${videoId}`)
+      }, 500)
       
     } catch (error) {
+      clearInterval(progressInterval)
       setError(error.response?.data?.message || 'Upload failed')
       setUploadProgress(0)
     } finally {
@@ -500,7 +510,7 @@ const Upload = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Uploading...</span>
-                  <span>{uploadProgress}%</span>
+                  <span>{Math.floor(uploadProgress)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div

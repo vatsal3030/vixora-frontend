@@ -21,11 +21,15 @@ export const videoService = {
   getVideos: (params = {}) => api.get('/videos', { params }),
   getVideo: (videoId) => api.get(`/videos/${videoId}`),
   getMyVideos: (params = {}) => api.get('/videos/me', { params }),
+  getDeletedVideos: () => api.get('/videos/trash/me'),
   uploadVideo: (formData) => api.post('/videos', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  updateVideo: (videoId, data) => api.patch(`/videos/${videoId}`, data),
+  updateVideo: (videoId, data) => api.patch(`/videos/${videoId}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   deleteVideo: (videoId) => api.delete(`/videos/${videoId}`),
+  restoreVideo: (videoId) => api.patch(`/videos/${videoId}/restore`),
   togglePublish: (videoId) => api.patch(`/videos/${videoId}/publish`)
 }
 
@@ -48,6 +52,8 @@ export const likeService = {
 // Subscription Service
 export const subscriptionService = {
   toggleSubscription: (channelId) => api.post(`/subscriptions/c/${channelId}/subscribe`),
+  setNotificationLevel: (channelId, level) => api.patch(`/subscriptions/c/${channelId}/notifications`, { level }),
+  getSubscriptionStatus: (channelId) => api.get(`/subscriptions/c/${channelId}/status`),
   getSubscriberCount: (channelId) => api.get(`/subscriptions/c/${channelId}/subscribers/count`),
   getSubscriptions: () => api.get('/subscriptions/u/subscriptions'),
   getSubscribedVideos: () => api.get('/subscriptions')
@@ -66,6 +72,9 @@ export const channelService = {
 export const userService = {
   updateProfile: (data) => api.patch('/users/update-account', data),
   changePassword: (data) => api.post('/users/change-password', data),
+  deleteAccount: (data) => api.delete('/users/delete-account', { data }),
+  restoreAccountRequest: (data) => api.patch('/users/restore-account/request', data),
+  restoreAccountConfirm: (data) => api.patch('/users/restore-account/confirm', data),
   updateAvatar: (formData) => api.patch('/users/update-avatar', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),

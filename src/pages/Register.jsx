@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Video, Eye, EyeOff, Upload, User } from 'lucide-react'
+import { toast } from 'sonner'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -97,6 +98,7 @@ const Register = () => {
 
       await register(registerData)
       setSuccess('Account created successfully! Redirecting to email verification...')
+      toast.success('Account created! Please verify your email.')
       setTimeout(() => {
         navigate('/verify-otp', { 
           state: { 

@@ -9,6 +9,7 @@ import { useSettings } from '../context/SettingsContext'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../hooks/useAuth'
 import Toggle from '../components/Toggle'
+import DeleteAccountDialog from '../components/DeleteAccountDialog'
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -510,42 +511,60 @@ const Settings = () => {
 
             {/* Privacy Settings */}
             {activeSection === 'privacy' && user && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Privacy Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Profile visibility</Label>
-                    <Select
-                      value={settings.profileVisibility || 'PUBLIC'}
-                      onValueChange={(value) => updateSetting('profileVisibility', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PUBLIC">Public</SelectItem>
-                        <SelectItem value="PRIVATE">Private</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {[
-                    { key: 'showSubscriptions', label: 'Show subscriptions' },
-                    { key: 'showLikedVideos', label: 'Show liked videos' },
-                    { key: 'allowComments', label: 'Allow comments' },
-                    { key: 'allowMentions', label: 'Allow mentions' }
-                  ].map((item) => (
-                    <div key={item.key} className="flex items-center justify-between p-4 rounded-lg border hover:border-primary/50 transition-colors">
-                      <p className="font-medium text-sm">{item.label}</p>
-                      <Toggle
-                        checked={settings[item.key]}
-                        onChange={(val) => updateSetting(item.key, val)}
-                      />
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Privacy Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Profile visibility</Label>
+                      <Select
+                        value={settings.profileVisibility || 'PUBLIC'}
+                        onValueChange={(value) => updateSetting('profileVisibility', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PUBLIC">Public</SelectItem>
+                          <SelectItem value="PRIVATE">Private</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
+                    {[
+                      { key: 'showSubscriptions', label: 'Show subscriptions' },
+                      { key: 'showLikedVideos', label: 'Show liked videos' },
+                      { key: 'allowComments', label: 'Allow comments' },
+                      { key: 'allowMentions', label: 'Allow mentions' }
+                    ].map((item) => (
+                      <div key={item.key} className="flex items-center justify-between p-4 rounded-lg border hover:border-primary/50 transition-colors">
+                        <p className="font-medium text-sm">{item.label}</p>
+                        <Toggle
+                          checked={settings[item.key]}
+                          onChange={(val) => updateSetting(item.key, val)}
+                        />
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Account Management */}
+                <Card className="border-red-200 dark:border-red-800">
+                  <CardHeader>
+                    <CardTitle className="text-red-600">Danger Zone</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
+                      <h4 className="font-semibold text-red-800 dark:text-red-400 mb-2">Delete Account</h4>
+                      <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+                        Permanently delete your account and all associated data. You can restore your account within 7 days.
+                      </p>
+                      <DeleteAccountDialog />
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
             )}
 
             {/* Notifications */}

@@ -2,9 +2,16 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { channelService, subscriptionService, playlistService, tweetService } from '../api/services'
 import { useAuth } from '../hooks/useAuth'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { Button } from '../components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
 import { Card, CardContent } from '../components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu'
 import VideoGrid from '../components/VideoGrid'
 import PlaylistCardSkeleton from '../components/PlaylistCardSkeleton'
 import PlaylistCard from '../components/PlaylistCard'
@@ -29,9 +36,12 @@ const Channel = ({ username: propUsername }) => {
   const [tabLoading, setTabLoading] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [subscribersCount, setSubscribersCount] = useState(0)
+  const [notificationLevel, setNotificationLevel] = useState('NONE')
 
   const currentChannelId = channelId || channel?.id
   const currentUsername = propUsername || paramUsername
+
+  useDocumentTitle(channel?.fullName ? `${channel.fullName} - Vidora` : null)
 
   useEffect(() => {
     if (channelId || currentUsername) {
@@ -40,8 +50,11 @@ const Channel = ({ username: propUsername }) => {
   }, [channelId, currentUsername])
 
   useEffect(() => {
-    if (currentChannelId && activeTab !== 'videos') {
-      fetchTabData()
+    if (currentChannelId) {
+      fetchSubscriptionStatus()
+      if (activeTab !== 'videos') {
+        fetchTabData()
+      }
     }
   }, [activeTab, currentChannelId])
 
@@ -69,6 +82,19 @@ const Channel = ({ username: propUsername }) => {
     }
   }
 
+  const fetchSubscriptionStatus = async () => {
+    if (!user?.id || !currentChannelId) return
+    
+    try {
+      const response = await subscriptionService.getSubscriptionStatus(currentChannelId)
+      const data = response?.data?.data || {}
+      setIsSubscribed(data.isSubscribed || false)
+      setNotificationLevel(data.notificationLevel || 'NONE')
+    } catch (error) {
+      console.error('Error fetching subscription status:', error)
+    }
+  }
+
   const fetchTabData = async () => {
     try {
       setTabLoading(true)
@@ -93,10 +119,25 @@ const Channel = ({ username: propUsername }) => {
 
   const handleSubscribe = async () => {
     try {
-      await subscriptionService.toggleSubscription(channel?.id)
-      setIsSubscribed(!isSubscribed)
+      const response = await subscriptionService.toggleSubscription(channel?.id)
+      const data = response?.data?.data || {}
+      setIsSubscribed(data.isSubscribed || false)
+      
+      // Reset notifications if unsubscribing
+      if (!data.isSubscribed) {
+        setNotificationLevel('NONE')
+      }
     } catch (error) {
       console.error('Error toggling subscription:', error)
+    }
+  }
+
+  const handleNotificationChange = async (level) => {
+    try {
+      await subscriptionService.setNotificationLevel(channel?.id, level)
+      setNotificationLevel(level)
+    } catch (error) {
+      console.error('Error updating notification level:', error)
     }
   }
 
@@ -386,13 +427,47 @@ const Channel = ({ username: propUsername }) => {
                   variant={isSubscribed ? "outline" : "default"}
                   className="flex items-center space-x-2"
                 >
-                  <Bell className="h-4 w-4" />
                   <span>{isSubscribed ? 'Subscribed' : 'Subscribe'}</span>
                 </Button>
                 {isSubscribed && (
-                  <Button variant="outline" size="sm">
-                    <Bell className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center space-x-1"
+                      >
+                        <Bell className={`h-4 w-4 ${notificationLevel !== 'NONE' ? 'fill-current' : ''}`} />
+                        <span className="text-xs">
+                          {notificationLevel === 'ALL' ? 'All' : 
+                           notificationLevel === 'PERSONALIZED' ? 'Personalized' : 'None'}
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem 
+                        onClick={() => handleNotificationChange('ALL')}
+                        className={notificationLevel === 'ALL' ? 'bg-accent' : ''}
+                      >
+                        <Bell className="h-4 w-4 mr-2 fill-current" />
+                        All notifications
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleNotificationChange('PERSONALIZED')}
+                        className={notificationLevel === 'PERSONALIZED' ? 'bg-accent' : ''}
+                      >
+                        <Bell className="h-4 w-4 mr-2" />
+                        Personalized
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleNotificationChange('NONE')}
+                        className={notificationLevel === 'NONE' ? 'bg-accent' : ''}
+                      >
+                        <Bell className="h-4 w-4 mr-2 opacity-50" />
+                        None
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
             )}

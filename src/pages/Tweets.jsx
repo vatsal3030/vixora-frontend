@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { tweetService } from '../api/services'
 import { useAuth } from '../hooks/useAuth'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { Button } from '../components/ui/button'
 import { Textarea } from '../components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
@@ -18,6 +19,8 @@ const Tweets = () => {
   const [selectedImage, setSelectedImage] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [posting, setPosting] = useState(false)
+
+  useDocumentTitle('Tweets')
 
   useEffect(() => {
     if (user?.id) {

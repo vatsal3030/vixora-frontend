@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Video, Mail, Clock } from 'lucide-react'
+import { toast } from 'sonner'
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState('')
@@ -63,6 +64,7 @@ const VerifyOtp = () => {
     try {
       await authService.verifyEmail({ identifier, otp })
       setSuccess('Email verified successfully!')
+      toast.success('Email verified successfully!')
       setTimeout(() => {
         navigate('/login', { 
           state: { message: 'Email verified! Please login to continue.' }
@@ -84,6 +86,7 @@ const VerifyOtp = () => {
     try {
       await authService.resendOtp(identifier)
       setSuccess('OTP resent successfully!')
+      toast.success('OTP resent successfully!')
       setResendCooldown(120) // 2 minutes cooldown
       setOtpExpiry(300) // Reset to 5 minutes
       setTimeout(() => setSuccess(''), 3000)

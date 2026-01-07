@@ -2,7 +2,7 @@ import { useSettings } from '../context/SettingsContext'
 import VideoCard from './VideoCard'
 import { useEffect } from 'react'
 
-const VideoGrid = ({ videos = [], loading = false }) => {
+const VideoGrid = ({ videos = [], loading = false, showEditButton = false, onVideoDeleted }) => {
   const { settings } = useSettings()
 
   // Update CSS variable when grid columns change
@@ -48,6 +48,8 @@ const VideoGrid = ({ videos = [], loading = false }) => {
           showViews={settings.showViewCount}
           showChannel={settings.showChannelName}
           compact={settings.compactMode}
+          showEditButton={showEditButton}
+          onVideoDeleted={onVideoDeleted}
         />
       ))}
     </div>

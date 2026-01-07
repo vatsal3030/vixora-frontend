@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Video, Eye, EyeOff, Mail, Lock, Clock } from 'lucide-react'
+import { toast } from 'sonner'
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -67,13 +68,14 @@ const Login = () => {
 
     try {
       await login(formData.email, formData.password)
+      toast.success('Login successful!')
       navigate('/')
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed'
       
-      // Check if error is about email verification
       if (errorMessage.includes('verify your email')) {
         setError('Please verify your email first.')
+        toast.error('Email verification required')
         setTimeout(() => {
           navigate('/verify-otp', {
             state: {
@@ -84,6 +86,7 @@ const Login = () => {
         }, 2000)
       } else {
         setError(errorMessage)
+        toast.error(errorMessage)
       }
     } finally {
       setLoading(false)
@@ -118,7 +121,7 @@ const Login = () => {
         setShowForgotPassword(false)
         setForgotStep('email')
         setError('')
-        alert('Password reset successfully! Please login with your new password.')
+        toast.success('Password reset successfully! Please login with your new password.')
       }
     } catch (error) {
       setError(error.response?.data?.message || 'Operation failed')
@@ -137,7 +140,7 @@ const Login = () => {
       await authService.forgotPassword(forgotEmail)
       setResendCooldown(120) // 2 minutes
       setOtpExpiry(300) // 5 minutes
-      alert('OTP resent successfully!')
+      toast.success('OTP resent successfully!')
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to resend OTP')
     } finally {
@@ -282,6 +285,12 @@ const Login = () => {
                   Need to verify your email?{' '}
                   <Link to="/email-verification" className="font-medium text-primary hover:text-primary-hover">
                     Verify Email
+                  </Link>
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Deleted your account?{' '}
+                  <Link to="/restore-account" className="font-medium text-blue-600 hover:text-blue-700">
+                    Restore Account
                   </Link>
                 </p>
               </div>

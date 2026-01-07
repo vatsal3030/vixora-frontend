@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { videoService } from '../api/services'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import VideoGrid from '../components/VideoGrid'
 import { Button } from '../components/ui/button'
 import {
@@ -18,10 +19,15 @@ const MyVideos = () => {
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('all')
 
+  useDocumentTitle('Your Videos')
+
   useEffect(() => {
     fetchMyVideos()
   }, [filter])
 
+  const handleVideoDeleted = (videoId) => {
+    setVideos(prev => prev.filter(video => video.id !== videoId))
+  }
   const fetchMyVideos = async () => {
     try {
       setLoading(true)
@@ -31,10 +37,20 @@ const MyVideos = () => {
       } else if (filter === 'shorts') {
         params.isShort = 'true'
       }
-      
-      const response = await videoService.getMyVideos(params)
-      const videosData = response?.data?.data?.videos || response?.data?.data || []
-      setVideos(Array.isArray(videosData) ? videosData : [])
+
+      // 🔥 CALL TWO TIMES AND MERGE
+      const normalResponse = await videoService.getMyVideos({ isShort: 'false' });
+      const shortResponse = await videoService.getMyVideos({ isShort: 'true' });
+
+
+      const normalVideos = normalResponse?.data?.data?.videos || [];
+      const shortVideos = shortResponse?.data?.data?.videos || [];
+
+      const mergedVideos = [...normalVideos, ...shortVideos];
+
+      setVideos(mergedVideos);
+
+
     } catch (error) {
       console.error('Error fetching my videos:', error)
       setError('Failed to load your videos')
@@ -82,7 +98,7 @@ const MyVideos = () => {
           </Link>
         </Button>
       </div>
-      
+
       {loading ? (
         <VideoGrid loading={true} />
       ) : videos.length === 0 ? (
@@ -95,7 +111,7 @@ const MyVideos = () => {
           </Button>
         </div>
       ) : (
-        <VideoGrid videos={videos} />
+        <VideoGrid videos={videos} showEditButton={true} onVideoDeleted={handleVideoDeleted} />
       )}
     </div>
   )

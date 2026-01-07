@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { likeService } from '../api/services'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import VideoGrid from '../components/VideoGrid'
 import VideoCardSkeleton from '../components/VideoCardSkeleton'
 
@@ -9,6 +10,8 @@ const LikedVideos = () => {
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useDocumentTitle('Liked Videos')
 
   useEffect(() => {
     fetchLikedVideos()

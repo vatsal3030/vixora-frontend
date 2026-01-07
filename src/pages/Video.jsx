@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { videoService, commentService, likeService, subscriptionService, watchHistoryService } from '../api/services'
 import { useAuth } from '../hooks/useAuth'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { Button } from '../components/ui/button'
 import { Textarea } from '../components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
@@ -27,9 +28,12 @@ const Video = () => {
   const [commentLoading, setCommentLoading] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
+  const [notificationLevel, setNotificationLevel] = useState('NONE')
   const [watchProgress, setWatchProgress] = useState(0)
   const [commentSort, setCommentSort] = useState('latest')
   const hasResumed = useRef(false)
+
+  useDocumentTitle(video?.title)
 
   useEffect(() => {
     if (videoId) {
@@ -38,6 +42,12 @@ const Video = () => {
       fetchWatchProgress()
     }
   }, [videoId])
+
+  useEffect(() => {
+    if (video?.owner?.id && user?.id) {
+      fetchSubscriptionStatus()
+    }
+  }, [video?.owner?.id, user?.id])
 
   const fetchWatchProgress = async () => {
     try {
@@ -55,11 +65,23 @@ const Video = () => {
       const videoData = response?.data?.data || {}
       setVideo(videoData)
       setIsLiked(videoData.isLiked || false)
-      setIsSubscribed(videoData.owner?.isSubscribed || false)
     } catch (error) {
       console.error('Error fetching video:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchSubscriptionStatus = async () => {
+    if (!user?.id || !video?.owner?.id) return
+    
+    try {
+      const response = await subscriptionService.getSubscriptionStatus(video.owner.id)
+      const data = response?.data?.data || {}
+      setIsSubscribed(data.isSubscribed || false)
+      setNotificationLevel(data.notificationLevel || 'NONE')
+    } catch (error) {
+      console.error('Error fetching subscription status:', error)
     }
   }
 
@@ -109,19 +131,31 @@ const Video = () => {
   const handleSubscribe = async () => {
     try {
       const response = await subscriptionService.toggleSubscription(video.owner.id)
-      const newIsSubscribed = !isSubscribed
-      setIsSubscribed(newIsSubscribed)
+      const data = response?.data?.data || {}
+      setIsSubscribed(data.isSubscribed || false)
       setVideo(prev => ({
         ...prev,
         owner: {
           ...prev.owner,
-          isSubscribed: newIsSubscribed,
-          subscribersCount: response.data?.subscriberCount || prev.owner.subscribersCount
+          subscribersCount: data.subscriberCount || prev.owner.subscribersCount
         }
       }))
+      
+      // Reset notifications if unsubscribing
+      if (!data.isSubscribed) {
+        setNotificationLevel('NONE')
+      }
     } catch (error) {
       console.error('Error toggling subscription:', error)
-      setIsSubscribed(isSubscribed)
+    }
+  }
+
+  const handleNotificationChange = async (level) => {
+    try {
+      await subscriptionService.setNotificationLevel(video.owner.id, level)
+      setNotificationLevel(level)
+    } catch (error) {
+      console.error('Error updating notification level:', error)
     }
   }
 
@@ -381,17 +415,59 @@ const Video = () => {
                   </div>
 
                   {video.owner?.id !== user?.id && (
-                    <Button
-                      onClick={handleSubscribe}
-                      variant={isSubscribed ? "outline" : "default"}
-                      size="sm"
-                      className={`flex-shrink-0 h-9 px-6 rounded-full font-semibold flex items-center gap-2 ${
-                        isSubscribed ? 'bg-secondary hover:bg-secondary/80' : 'bg-primary hover:bg-primary/90'
-                      }`}
-                    >
-                      {isSubscribed && <Bell className="h-4 w-4" />}
-                      {isSubscribed ? 'Subscribed' : 'Subscribe'}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={handleSubscribe}
+                        variant={isSubscribed ? "outline" : "default"}
+                        size="sm"
+                        className={`flex-shrink-0 h-9 px-6 rounded-full font-semibold flex items-center gap-2 ${
+                          isSubscribed ? 'bg-secondary hover:bg-secondary/80' : 'bg-primary hover:bg-primary/90'
+                        }`}
+                      >
+                        {isSubscribed ? 'Subscribed' : 'Subscribe'}
+                      </Button>
+                      
+                      {isSubscribed && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-9 px-3 rounded-full flex items-center space-x-1"
+                            >
+                              <Bell className={`h-4 w-4 ${notificationLevel !== 'NONE' ? 'fill-current' : ''}`} />
+                              <span className="text-xs">
+                                {notificationLevel === 'ALL' ? 'All' : 
+                                 notificationLevel === 'PERSONALIZED' ? 'Personalized' : 'None'}
+                              </span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={() => handleNotificationChange('ALL')}
+                              className={notificationLevel === 'ALL' ? 'bg-accent' : ''}
+                            >
+                              <Bell className="h-4 w-4 mr-2 fill-current" />
+                              All notifications
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleNotificationChange('PERSONALIZED')}
+                              className={notificationLevel === 'PERSONALIZED' ? 'bg-accent' : ''}
+                            >
+                              <Bell className="h-4 w-4 mr-2" />
+                              Personalized
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleNotificationChange('NONE')}
+                              className={notificationLevel === 'NONE' ? 'bg-accent' : ''}
+                            >
+                              <Bell className="h-4 w-4 mr-2 opacity-50" />
+                              None
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
                   )}
                 </div>
               </CardContent>

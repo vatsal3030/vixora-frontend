@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { videoService } from '../api/services'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import VideoCard from '../components/VideoCard'
 import Loader from '../components/Loader'
 
@@ -10,6 +11,8 @@ const Search = () => {
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useDocumentTitle(query ? `${query} - Search` : 'Search')
 
   useEffect(() => {
     if (query) {

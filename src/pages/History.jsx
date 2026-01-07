@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import { watchHistoryService } from '../api/services'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import VideoGrid from '../components/VideoGrid'
 
 const History = () => {
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useDocumentTitle('History')
 
   useEffect(() => {
     fetchHistory()

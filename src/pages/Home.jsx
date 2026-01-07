@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { feedService, videoService } from '../api/services'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import VideoGrid from '../components/VideoGrid'
 import VideoCardSkeleton from '../components/VideoCardSkeleton'
 import AddToPlaylistDialog from '../components/AddToPlaylistDialog'
@@ -21,6 +22,8 @@ const Home = () => {
   const [sortBy, setSortBy] = useState('latest')
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(false)
   const [selectedVideoId, setSelectedVideoId] = useState(null)
+
+  useDocumentTitle(null) // Home page shows only "Vidora"
 
   useEffect(() => {
     fetchVideos()
