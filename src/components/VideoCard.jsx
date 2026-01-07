@@ -12,7 +12,7 @@ import {
 } from './ui/dropdown-menu'
 import { formatDate } from '../utils/formatDate'
 import { formatDuration, formatViews } from '../utils/videoUtils'
-import { Eye, Clock, MoreVertical, Plus, ListPlus, Share, Copy, ExternalLink } from 'lucide-react'
+import { Eye, Clock, MoreVertical, Plus, ListPlus, Share, Copy, ExternalLink, Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import PlaylistModal from './PlaylistModal'
 
 const VideoCard = ({ 
@@ -26,6 +26,10 @@ const VideoCard = ({
   const [showPreview, setShowPreview] = useState(false)
   const [showPlaylistModal, setShowPlaylistModal] = useState(false)
   const [message, setMessage] = useState('')
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(true)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
   const hoverTimeoutRef = useRef(null)
   const videoRef = useRef(null)
 
@@ -63,25 +67,86 @@ const VideoCard = ({
   const watchProgress = video.progress?.percentage || 0
 
   const handleMouseEnter = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
     hoverTimeoutRef.current = setTimeout(() => {
-      setShowPreview(true)
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0
-        videoRef.current.play().catch(() => {})
+      if (video.videoFile) {
+        setShowPreview(true)
       }
     }, 1000)
-  }, [])
+  }, [video.videoFile])
 
   const handleMouseLeave = useCallback(() => {
     setShowPreview(false)
+    setIsPlaying(false)
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current)
     }
     if (videoRef.current) {
       videoRef.current.pause()
       videoRef.current.currentTime = 0
+      setCurrentTime(0)
     }
   }, [])
+
+  // Auto-play when preview shows
+  const handleVideoLoad = () => {
+    if (videoRef.current && showPreview) {
+      videoRef.current.currentTime = 0
+      videoRef.current.muted = isMuted
+      videoRef.current.play().then(() => {
+        setIsPlaying(true)
+      }).catch(console.error)
+    }
+  }
+
+  const togglePlayPause = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause()
+        setIsPlaying(false)
+      } else {
+        videoRef.current.play()
+        setIsPlaying(true)
+      }
+    }
+  }
+
+  const toggleMute = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted
+      setIsMuted(!isMuted)
+    }
+  }
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime)
+    }
+  }
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration)
+    }
+  }
+
+  const handleSeek = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (videoRef.current && duration > 0) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      const clickX = e.clientX - rect.left
+      const newTime = (clickX / rect.width) * duration
+      videoRef.current.currentTime = newTime
+      setCurrentTime(newTime)
+    }
+  }
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 bg-card relative group">
@@ -92,14 +157,66 @@ const VideoCard = ({
           onMouseLeave={handleMouseLeave}
         >
           {showPreview && video.videoFile ? (
-            <video
-              ref={videoRef}
-              src={video.videoFile}
-              className="w-full h-full object-cover"
-              muted
-              loop
-              playsInline
-            />
+            <>
+              <video
+                ref={videoRef}
+                src={video.videoFile}
+                className="w-full h-full object-cover"
+                muted={isMuted}
+                loop
+                playsInline
+                autoPlay
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
+                onCanPlay={handleVideoLoad}
+              />
+              
+              {/* Video Controls Overlay */}
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={togglePlayPause}
+                    className="h-8 w-8 p-0 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full"
+                  >
+                    {isPlaying ? (
+                      <Pause className="h-4 w-4 text-white" />
+                    ) : (
+                      <Play className="h-4 w-4 text-white ml-0.5" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleMute}
+                    className="h-8 w-8 p-0 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full"
+                  >
+                    {isMuted ? (
+                      <VolumeX className="h-4 w-4 text-white" />
+                    ) : (
+                      <Volume2 className="h-4 w-4 text-white" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              {duration > 0 && (
+                <div 
+                  className="absolute bottom-0 left-0 w-full h-1 bg-black/40 cursor-pointer group/progress"
+                  onClick={handleSeek}
+                >
+                  <div 
+                    className="h-full bg-primary transition-all duration-100"
+                    style={{ width: `${(currentTime / duration) * 100}%` }}
+                  />
+                  <div className="absolute inset-0 opacity-0 group-hover/progress:opacity-100 transition-opacity">
+                    <div className="h-full bg-white/20" />
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <img
               src={video.thumbnail}
@@ -124,8 +241,8 @@ const VideoCard = ({
               />
             </div>
           )}
-          {/* Three Dots Menu - Top Right */}
-          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.preventDefault()}>
+          {/* Three Dots Menu - Bottom Right */}
+          <div className="absolute bottom-1.5 right-1.5 z-10" onClick={(e) => e.preventDefault()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 

@@ -5,10 +5,15 @@ export const authService = {
   register: (formData) => api.post('/users/register', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  verifyEmail: (data) => api.post('/users/verify-email', data),
+  resendOtp: (identifier) => api.post('/users/resend-otp', { identifier }),
   login: (data) => api.post('/users/login', data),
   logout: () => api.post('/users/logout'),
   refreshToken: (refreshToken) => api.post('/users/refresh-token', { refreshToken }),
-  getCurrentUser: () => api.get('/users/current-user')
+  getCurrentUser: () => api.get('/users/current-user'),
+  forgotPassword: (email) => api.post('/users/forgot-password', { email }),
+  forgotPasswordVerify: (data) => api.post('/users/forgot-password/verify', data),
+  resetPassword: (data) => api.post('/users/reset-password', data)
 }
 
 // Video Service
@@ -50,29 +55,26 @@ export const subscriptionService = {
 
 // Channel Service
 export const channelService = {
-  getChannel: (channelId) => api.get(`/users/id/${channelId}`),
+  getChannel: (channelId) => api.get(`/channels/${channelId}`),
   getChannelByUsername: (username) => api.get(`/users/u/${username}`),
-  getChannelVideos: (channelId, params = {}) => api.get(`/videos/user/${channelId}`, { params }),
-  getChannelPlaylists: (channelId) => api.get(`/playlists/user/${channelId}`),
-  getChannelTweets: (channelId, params = {}) => api.get(`/tweets/user/${channelId}`, { params })
+  getChannelVideos: (channelId, params = {}) => api.get(`/channels/${channelId}/videos`, { params }),
+  getChannelPlaylists: (channelId) => api.get(`/channels/${channelId}/playlists`),
+  getChannelTweets: (channelId, params = {}) => api.get(`/channels/${channelId}/tweets`, { params })
 }
 
 // User Service
 export const userService = {
   updateProfile: (data) => api.patch('/users/update-account', data),
-  changePassword: (data) => api.post('/users/change-password', data), // Fixed typo
+  changePassword: (data) => api.post('/users/change-password', data),
   updateAvatar: (formData) => api.patch('/users/update-avatar', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   updateCoverImage: (formData) => api.patch('/users/update-coverImage', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  getWatchHistory: () => api.get('/users/History'), // Backend uses /History
+  getWatchHistory: () => api.get('/users/history'),
   getUserChannelProfile: (username) => api.get(`/users/u/${username}`),
-  updateChannelDescription: (data) => api.patch('/users/update-description', data), // Fixed to use PATCH
-  getSettings: () => api.get('/users/settings'),
-  updateSettings: (data) => api.patch('/users/settings', data),
-  resetSettings: () => api.post('/users/settings/reset')
+  updateChannelDescription: (data) => api.patch('/users/update-description', data)
 }
 
 // Feed Service

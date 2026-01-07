@@ -10,6 +10,8 @@ import Channel from './pages/Channel'
 import Upload from './pages/Upload'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import EmailVerification from './pages/EmailVerification'
+import VerifyOtp from './pages/VerifyOtp'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Trending from './pages/Trending'
@@ -57,6 +59,8 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/email-verification" element={<EmailVerification />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Home />} />
               <Route path="shorts" element={<Shorts />} />

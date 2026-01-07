@@ -13,15 +13,11 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('accessToken')
-      if (token) {
-        const response = await authService.getCurrentUser()
-        setUser(response.data.data)
-      }
+      const response = await authService.getCurrentUser()
+      setUser(response.data.data)
     } catch (error) {
-      console.error('Auth check failed:', error);
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
+      console.error('Auth check failed:', error)
+      setUser(null)
     } finally {
       setLoading(false)
     }
@@ -29,12 +25,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await authService.login({ email, password })
-    const { accessToken, refreshToken, user } = response.data.data
-    
-    localStorage.setItem('accessToken', accessToken)
-    localStorage.setItem('refreshToken', refreshToken)
-    setUser(user)
-    
+    // Tokens are set as httpOnly cookies by backend
+    setUser(response.data.data.user)
     return response.data
   }
 
@@ -49,8 +41,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
       setUser(null)
     }
   }

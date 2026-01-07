@@ -64,9 +64,9 @@ const Sidebar = memo(() => {
             : 'translate-x-0 w-52 sm:w-52 md:w-56 lg:w-60'
         }
       `}>
-      <div className="p-2">
+      <div className="p-2 pt-4">
         {/* Toggle Button */}
-        <div className="mb-2 pb-2 border-b border-border">
+        <div className="mb-2 pb-2 border-b border-border hidden sm:block">
           <Button
             variant="ghost"
             size="sm"
