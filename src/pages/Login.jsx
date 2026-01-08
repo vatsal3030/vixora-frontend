@@ -162,7 +162,7 @@ const Login = () => {
             <Video className="h-12 w-12 text-primary" />
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Sign in to Vidora
+            Sign in to Vixora
           </h2>
         </div>
 

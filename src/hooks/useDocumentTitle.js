@@ -5,9 +5,9 @@ export const useDocumentTitle = (title) => {
     const previousTitle = document.title
     
     if (title) {
-      document.title = title.includes('Vidora') ? title : `${title} - Vidora`
+      document.title = title.includes('Vixora') ? title : `${title} - Vixora`
     } else {
-      document.title = 'Vidora'
+      document.title = 'Vixora'
     }
     
     return () => {

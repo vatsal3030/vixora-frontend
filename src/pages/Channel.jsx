@@ -41,7 +41,7 @@ const Channel = ({ username: propUsername }) => {
   const currentChannelId = channelId || channel?.id
   const currentUsername = propUsername || paramUsername
 
-  useDocumentTitle(channel?.fullName ? `${channel.fullName} - Vidora` : null)
+  useDocumentTitle(channel?.fullName ? `${channel.fullName} - Vixora` : null)
 
   useEffect(() => {
     if (channelId || currentUsername) {

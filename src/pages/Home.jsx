@@ -23,7 +23,7 @@ const Home = () => {
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(false)
   const [selectedVideoId, setSelectedVideoId] = useState(null)
 
-  useDocumentTitle(null) // Home page shows only "Vidora"
+  useDocumentTitle(null) // Home page shows only "Vixora"
 
   useEffect(() => {
     fetchVideos()

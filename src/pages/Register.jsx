@@ -128,7 +128,7 @@ const Register = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign up for Vidora</CardTitle>
+            <CardTitle>Sign up for Vixora</CardTitle>
             <CardDescription>
               Create an account to start uploading and sharing videos
             </CardDescription>
