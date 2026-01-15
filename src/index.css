@@ -77,7 +77,8 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
-[data-theme="dark"] {
+[data-theme="dark"],
+.dark {
   --primary: 217 91% 60%;
   --primary-hover: 213 94% 68%;
   --primary-active: 221 83% 53%;
@@ -182,16 +183,26 @@
                 color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
                 border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  *:focus,
+  *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
   
   html {
     font-size: var(--font-size-base);
     color-scheme: light;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-y: scroll; /* Always show scrollbar */
   }
 
-  html[data-theme="dark"] {
+  html, body {
+    overflow-y: scroll !important;
+    scrollbar-gutter: stable;
+  }
+
+  html.dark {
     color-scheme: dark;
   }
   
@@ -285,15 +296,18 @@
     box-shadow: 0 0 0 4px hsl(var(--primary-muted));
   }
 
-  [data-theme="dark"] .switch-root {
+  [data-theme="dark"] .switch-root,
+  .dark .switch-root {
     background-color: #4b5563;
   }
 
-  [data-theme="dark"] .switch-root[data-state="checked"] {
+  [data-theme="dark"] .switch-root[data-state="checked"],
+  .dark .switch-root[data-state="checked"] {
     background-color: hsl(var(--primary));
   }
 
-  [data-theme="dark"] .switch-root[data-state="checked"]:hover {
+  [data-theme="dark"] .switch-root[data-state="checked"]:hover,
+  .dark .switch-root[data-state="checked"]:hover {
     background-color: hsl(var(--primary-hover));
   }
 

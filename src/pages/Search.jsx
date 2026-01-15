@@ -27,7 +27,6 @@ const Search = () => {
       const videosData = response?.data?.data?.videos || response?.data?.data || []
       setVideos(Array.isArray(videosData) ? videosData : [])
     } catch (error) {
-      console.error('Error searching videos:', error)
       setError('Failed to search videos')
     } finally {
       setLoading(false)

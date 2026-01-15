@@ -94,7 +94,7 @@ const Shorts = () => {
       
       setHasMore(newShorts.length === 10)
     } catch (error) {
-      console.error('Error fetching shorts:', error)
+      // Error fetching shorts
     } finally {
       setLoading(false)
     }
@@ -167,7 +167,7 @@ const Shorts = () => {
           : short
       ))
     } catch (error) {
-      console.error('Error toggling like:', error)
+      // Error toggling like
     }
   }, [])
 
@@ -186,7 +186,7 @@ const Shorts = () => {
           : short
       ))
     } catch (error) {
-      console.error('Error toggling subscription:', error)
+      // Error toggling subscription
     }
   }, [])
 
@@ -208,7 +208,7 @@ const Shorts = () => {
       ))
       setNewComment('')
     } catch (error) {
-      console.error('Error adding comment:', error)
+      // Error adding comment
     }
   }
 

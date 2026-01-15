@@ -81,40 +81,40 @@ const Navbar = () => {
         </div> */}
 
         <div className="flex-1 max-w-4xl mx-1 sm:mx-4">
-          <form onSubmit={handleSearch} className="search-container">
+          <form onSubmit={handleSearch} className="relative w-full">
             <Input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="border-none focus:border-none focus-visible:ring-0 focus-visible:ring-offset-0"
-              style={{
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                borderRadius: '12px',
-                background: 'transparent'
-              }}
+              className="w-full h-10 pl-4 pr-12 rounded-full border bg-white dark:bg-neutral-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border-gray-300 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
             />
-            <button type="submit">
-              <Search />
+            <button
+              type="submit"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <Search className="h-5 w-5" />
             </button>
           </form>
         </div>
 
-        <div className="flex items-center space-x-1 sm:space-x-2">
+        <div className="flex items-center h-full gap-2">
           {/* Theme Toggle */}
-          <div className="hidden sm:block">
+          <div className="hidden sm:flex items-center h-9">
             <ThemeToggle />
           </div>
 
-          <Button asChild variant="ghost" size="sm" className="hidden sm:flex p-2">
-            <Link to="/upload" className="flex items-center">
+          <Button asChild variant="ghost" size="sm" className="hidden sm:flex h-9 px-3">
+            <Link to="/upload" className="flex items-center gap-1">
               <Upload className="h-4 w-4" />
-              <span className="hidden lg:inline ml-1">Upload</span>
+              <span className="hidden lg:inline">Upload</span>
             </Link>
           </Button>
 
           {/* Notifications */}
-          <NotificationDropdown />
+          <div className="flex items-center h-9">
+            <NotificationDropdown />
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

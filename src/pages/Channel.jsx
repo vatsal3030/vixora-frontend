@@ -76,7 +76,7 @@ const Channel = ({ username: propUsername }) => {
       setVideos(Array.isArray(videosData) ? videosData : [])
       
     } catch (error) {
-      console.error('Error fetching channel data:', error)
+      // Error fetching channel data
     } finally {
       setLoading(false)
     }
@@ -91,7 +91,7 @@ const Channel = ({ username: propUsername }) => {
       setIsSubscribed(data.isSubscribed || false)
       setNotificationLevel(data.notificationLevel || 'NONE')
     } catch (error) {
-      console.error('Error fetching subscription status:', error)
+      // Error fetching subscription status
     }
   }
 
@@ -105,13 +105,14 @@ const Channel = ({ username: propUsername }) => {
         setShorts(Array.isArray(shortsData) ? shortsData : [])
       } else if (activeTab === 'playlists') {
         const response = await channelService.getChannelPlaylists(channel?.id)
-        const playlistsData = response?.data?.data || []
+        const data = response?.data?.data
+        const playlistsData = data?.playlists || data || []
         setPlaylists(Array.isArray(playlistsData) ? playlistsData : [])
       } else if (activeTab === 'tweets') {
         await fetchTweets(1, true)
       }
     } catch (error) {
-      console.error('Error fetching tab data:', error)
+      // Error fetching tab data
     } finally {
       setTabLoading(false)
     }
@@ -128,7 +129,7 @@ const Channel = ({ username: propUsername }) => {
         setNotificationLevel('NONE')
       }
     } catch (error) {
-      console.error('Error toggling subscription:', error)
+      // Error toggling subscription
     }
   }
 
@@ -137,7 +138,7 @@ const Channel = ({ username: propUsername }) => {
       await subscriptionService.setNotificationLevel(channel?.id, level)
       setNotificationLevel(level)
     } catch (error) {
-      console.error('Error updating notification level:', error)
+      // Error updating notification level
     }
   }
 
@@ -163,7 +164,7 @@ const Channel = ({ username: propUsername }) => {
       setTweetsHasMore(tweetsArray.length === 10)
       setTweetsPage(page)
     } catch (error) {
-      console.error('Error fetching tweets:', error)
+      // Error fetching tweets
     } finally {
       setTweetsLoading(false)
     }
@@ -238,14 +239,17 @@ const Channel = ({ username: propUsername }) => {
             <CardContent className="p-12 text-center">
               <List className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-muted-foreground mb-2">
-                No playlists available
+                No public playlists
               </h3>
+              <p className="text-sm text-muted-foreground">
+                This channel hasn't created any public playlists yet
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {playlists.map((playlist) => (
-              <PlaylistCard key={playlist.id} playlist={playlist} />
+              <PlaylistCard key={playlist.id} playlist={playlist} showOwnerInfo={false} />
             ))}
           </div>
         )

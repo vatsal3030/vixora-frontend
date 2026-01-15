@@ -28,6 +28,8 @@ import Shorts from './pages/Shorts'
 import WatchLater from './pages/WatchLater'
 import Playlists from './pages/Playlists'
 import PlaylistView from './pages/PlaylistView'
+import PlaylistPlayerPage from './pages/PlaylistPlayerPage'
+import PlaylistTrash from './pages/PlaylistTrash'
 import Tweets from './pages/Tweets'
 import Trash from './pages/Trash'
 import { useAuth } from './hooks/useAuth'
@@ -76,7 +78,8 @@ function App() {
               <Route path="liked" element={<LikedVideos />} />
               <Route path="watch-later" element={<WatchLater />} />
               <Route path="playlists" element={<Playlists />} />
-              <Route path="playlist/:playlistId" element={<PlaylistView />} />
+              <Route path="playlists/trash" element={<PlaylistTrash />} />
+              <Route path="playlist/:playlistId" element={<PlaylistPlayerPage />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="search" element={<Search />} />
               <Route path="video/:videoId" element={<Video />} />

@@ -59,7 +59,7 @@ const TweetCreateForm = ({ onTweetCreated }) => {
       setNewTweet('')
       removeImage()
     } catch (error) {
-      console.error('Error creating tweet:', error)
+      // Error creating tweet
     } finally {
       setPosting(false)
     }

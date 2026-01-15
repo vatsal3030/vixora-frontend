@@ -52,7 +52,6 @@ const MyVideos = () => {
 
 
     } catch (error) {
-      console.error('Error fetching my videos:', error)
       setError('Failed to load your videos')
     } finally {
       setLoading(false)

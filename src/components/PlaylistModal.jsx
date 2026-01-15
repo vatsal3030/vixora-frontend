@@ -3,7 +3,8 @@ import { playlistService } from '../api/services'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Card, CardContent } from './ui/card'
-import { X, Plus, Check } from 'lucide-react'
+import { X, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 const PlaylistModal = ({ isOpen, onClose, videoId, onSuccess }) => {
   const [playlists, setPlaylists] = useState([])
@@ -22,10 +23,13 @@ const PlaylistModal = ({ isOpen, onClose, videoId, onSuccess }) => {
     try {
       setLoading(true)
       const response = await playlistService.getMyPlaylists()
-      const playlistsData = response?.data?.data || []
-      setPlaylists(Array.isArray(playlistsData) ? playlistsData : [])
+      const data = response?.data?.data
+      const playlistsData = data?.playlists || []
+      // Filter out Watch Later playlist
+      const filtered = playlistsData.filter(p => !p.isWatchLater)
+      setPlaylists(filtered)
     } catch (error) {
-      console.error('Error fetching playlists:', error)
+      toast.error('Failed to load playlists')
     } finally {
       setLoading(false)
     }
@@ -33,14 +37,12 @@ const PlaylistModal = ({ isOpen, onClose, videoId, onSuccess }) => {
 
   const handleAddToPlaylist = async (playlistId) => {
     try {
-      console.log('Adding video', videoId, 'to playlist', playlistId)
-      const response = await playlistService.addVideoToPlaylist(videoId, playlistId)
-      console.log('Add to playlist response:', response)
-      onSuccess?.('Video added to playlist successfully')
+      await playlistService.addVideoToPlaylist(videoId, playlistId)
+      toast.success('Video added to playlist')
+      onSuccess?.()
       onClose()
     } catch (error) {
-      console.error('Error adding to playlist:', error)
-      onSuccess?.('Failed to add video to playlist', 'error')
+      toast.error('Failed to add video to playlist')
     }
   }
 
@@ -59,13 +61,13 @@ const PlaylistModal = ({ isOpen, onClose, videoId, onSuccess }) => {
       const newPlaylist = response?.data?.data
       if (newPlaylist) {
         await handleAddToPlaylist(newPlaylist.id)
+        toast.success('Playlist created and video added')
       }
       
       setNewPlaylistName('')
       setShowCreateForm(false)
     } catch (error) {
-      console.error('Error creating playlist:', error)
-      onSuccess?.('Failed to create playlist', 'error')
+      toast.error('Failed to create playlist')
     } finally {
       setCreating(false)
     }

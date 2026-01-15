@@ -36,7 +36,6 @@ const Dashboard = () => {
 
       setTopVideos(topVideosResponse.data.data || [])
     } catch (error) {
-      console.error('Error fetching dashboard data:', error)
       setError('Failed to load dashboard data')
       // Fallback to mock data
       setStats({

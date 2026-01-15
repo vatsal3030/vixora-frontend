@@ -11,6 +11,7 @@ import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
 import { Plus, ListMusic } from 'lucide-react'
 import CreatePlaylistDialog from './CreatePlaylistDialog'
+import { toast } from 'sonner'
 
 const AddToPlaylistDialog = ({ open, onOpenChange, videoId }) => {
   const [playlists, setPlaylists] = useState([])
@@ -27,10 +28,13 @@ const AddToPlaylistDialog = ({ open, onOpenChange, videoId }) => {
     try {
       setLoading(true)
       const response = await playlistService.getMyPlaylists()
-      const playlistsData = response?.data?.data?.playlists || response?.data?.data || []
-      setPlaylists(Array.isArray(playlistsData) ? playlistsData : [])
+      const data = response?.data?.data
+      const playlistsData = data?.playlists || []
+      // Filter out Watch Later playlist
+      const filtered = playlistsData.filter(p => !p.isWatchLater)
+      setPlaylists(filtered)
     } catch (error) {
-      console.error('Error fetching playlists:', error)
+      toast.error('Failed to load playlists')
     } finally {
       setLoading(false)
     }
@@ -42,8 +46,10 @@ const AddToPlaylistDialog = ({ open, onOpenChange, videoId }) => {
       
       if (isInPlaylist) {
         await playlistService.removeVideoFromPlaylist(videoId, playlistId)
+        toast.success('Removed from playlist')
       } else {
         await playlistService.addVideoToPlaylist(videoId, playlistId)
+        toast.success('Added to playlist')
       }
       
       // Update local state
@@ -58,7 +64,7 @@ const AddToPlaylistDialog = ({ open, onOpenChange, videoId }) => {
           : playlist
       ))
     } catch (error) {
-      console.error('Error updating playlist:', error)
+      toast.error('Failed to update playlist')
     } finally {
       setUpdating(prev => ({ ...prev, [playlistId]: false }))
     }
@@ -66,6 +72,7 @@ const AddToPlaylistDialog = ({ open, onOpenChange, videoId }) => {
 
   const handlePlaylistCreated = (newPlaylist) => {
     setPlaylists(prev => [newPlaylist, ...prev])
+    toast.success('Playlist created successfully')
   }
 
   const isVideoInPlaylist = (playlist) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { playlistService } from '../api/services'
 import {
@@ -7,7 +7,6 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from './ui/dialog'
 import {
     Form,
@@ -22,53 +21,52 @@ import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { Button } from './ui/button'
 import { Switch } from './ui/switch'
-import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
-const CreatePlaylistDialog = ({ onPlaylistCreated, children }) => {
-    const [open, setOpen] = useState(false)
+const EditPlaylistDialog = ({ open, onOpenChange, playlist, onPlaylistUpdated }) => {
     const [loading, setLoading] = useState(false)
 
     const form = useForm({
         defaultValues: {
-            name: '',
-            description: '',
-            isPublic: true
+            name: playlist?.name || '',
+            description: playlist?.description || '',
+            isPublic: playlist?.isPublic ?? true
         }
     })
+
+    useEffect(() => {
+        if (playlist) {
+            form.reset({
+                name: playlist.name || '',
+                description: playlist.description || '',
+                isPublic: playlist.isPublic ?? true
+            })
+        }
+    }, [playlist, form])
 
     const onSubmit = async (data) => {
         try {
             setLoading(true)
-            const response = await playlistService.createPlaylist(data)
+            const response = await playlistService.updatePlaylist(playlist.id, data)
             if (response?.data?.data) {
-                onPlaylistCreated?.(response.data.data)
-                form.reset()
-                setOpen(false)
-                toast.success('Playlist created successfully')
+                onPlaylistUpdated?.(response.data.data)
+                onOpenChange(false)
+                toast.success('Playlist updated successfully')
             }
         } catch (error) {
-            toast.error('Failed to create playlist')
+            toast.error('Failed to update playlist')
         } finally {
             setLoading(false)
         }
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {children || (
-                    <Button className="flex items-center space-x-2">
-                        <Plus className="h-4 w-4" />
-                        <span>Create Playlist</span>
-                    </Button>
-                )}
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create New Playlist</DialogTitle>
+                    <DialogTitle>Edit Playlist</DialogTitle>
                     <DialogDescription>
-                        Create a new playlist to organize your videos.
+                        Update your playlist details.
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -150,13 +148,13 @@ const CreatePlaylistDialog = ({ onPlaylistCreated, children }) => {
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => setOpen(false)}
+                                onClick={() => onOpenChange(false)}
                                 disabled={loading}
                             >
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={loading}>
-                                {loading ? 'Creating...' : 'Create Playlist'}
+                                {loading ? 'Saving...' : 'Save Changes'}
                             </Button>
                         </div>
                     </form>
@@ -166,4 +164,4 @@ const CreatePlaylistDialog = ({ onPlaylistCreated, children }) => {
     )
 }
 
-export default CreatePlaylistDialog
+export default EditPlaylistDialog

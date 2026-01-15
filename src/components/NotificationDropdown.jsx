@@ -33,7 +33,7 @@ const NotificationDropdown = () => {
       const notificationsData = response?.data?.data || []
       setNotifications(Array.isArray(notificationsData) ? notificationsData : [])
     } catch (error) {
-      console.error('Error fetching notifications:', error)
+      // Error fetching notifications
     } finally {
       setLoading(false)
     }
@@ -44,7 +44,7 @@ const NotificationDropdown = () => {
       const response = await notificationService.getUnreadCount()
       setUnreadCount(response?.data?.data?.count || 0)
     } catch (error) {
-      console.error('Error fetching unread count:', error)
+      // Error fetching unread count
     }
   }
 
@@ -56,7 +56,7 @@ const NotificationDropdown = () => {
       ))
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch (error) {
-      console.error('Error marking notification as read:', error)
+      // Error marking notification as read
     }
   }
 
@@ -66,7 +66,7 @@ const NotificationDropdown = () => {
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
       setUnreadCount(0)
     } catch (error) {
-      console.error('Error marking all as read:', error)
+      // Error marking all as read
     }
   }
 
@@ -76,7 +76,7 @@ const NotificationDropdown = () => {
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
       fetchUnreadCount()
     } catch (error) {
-      console.error('Error deleting notification:', error)
+      // Error deleting notification
     }
   }
 
@@ -86,7 +86,7 @@ const NotificationDropdown = () => {
       setNotifications([])
       setUnreadCount(0)
     } catch (error) {
-      console.error('Error deleting all notifications:', error)
+      // Error deleting all notifications
     }
   }
 

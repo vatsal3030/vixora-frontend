@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { tweetService, videoService } from '../api/services'
+import { tweetService, videoService, playlistService } from '../api/services'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { Button } from '../components/ui/button'
 import { Card, CardContent } from '../components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
-import { Trash2, RotateCcw, MessageSquare, Video, PlaySquare } from 'lucide-react'
+import { Trash2, RotateCcw, MessageSquare, Video, PlaySquare, ListMusic } from 'lucide-react'
 import { formatDate } from '../utils/formatDate'
 import { formatDuration } from '../utils/videoUtils'
 import { useAuth } from '../hooks/useAuth'
@@ -16,6 +16,7 @@ const Trash = () => {
   const [activeTab, setActiveTab] = useState('videos')
   const [deletedTweets, setDeletedTweets] = useState([])
   const [deletedVideos, setDeletedVideos] = useState([])
+  const [deletedPlaylists, setDeletedPlaylists] = useState([])
   const [loading, setLoading] = useState(true)
 
   useDocumentTitle('Trash')
@@ -41,9 +42,13 @@ const Trash = () => {
         } else {
           setDeletedVideos(allVideos.filter(video => video.isShort))
         }
+      } else if (activeTab === 'playlists') {
+        const response = await playlistService.getDeletedPlaylists()
+        const playlistsData = response?.data?.data || []
+        setDeletedPlaylists(Array.isArray(playlistsData) ? playlistsData : [])
       }
     } catch (error) {
-      console.error('Error fetching deleted content:', error)
+      // Error fetching deleted content
     } finally {
       setLoading(false)
     }
@@ -59,10 +64,13 @@ const Trash = () => {
         await videoService.restoreVideo(itemId)
         setDeletedVideos(prev => prev.filter(item => item.id !== itemId))
         toast.success('Video restored successfully')
+      } else if (type === 'playlist') {
+        await playlistService.restorePlaylist(itemId)
+        setDeletedPlaylists(prev => prev.filter(item => item.id !== itemId))
+        toast.success('Playlist restored successfully')
       }
     } catch (error) {
       toast.error('Failed to restore item')
-      console.error('Error restoring item:', error)
     }
   }
 
@@ -70,17 +78,89 @@ const Trash = () => {
     if (!confirm('Are you sure? This will permanently delete the item and cannot be undone.')) return
     
     try {
-      console.log('Permanent delete not implemented yet')
+      // Permanent delete not implemented yet
     } catch (error) {
-      console.error('Error permanently deleting item:', error)
+      // Error permanently deleting item
     }
   }
 
   const tabs = [
     { id: 'videos', label: 'Videos', icon: Video },
     { id: 'shorts', label: 'Shorts', icon: PlaySquare },
+    { id: 'playlists', label: 'Playlists', icon: ListMusic },
     { id: 'tweets', label: 'Tweets', icon: MessageSquare },
   ]
+
+  const renderDeletedPlaylists = () => {
+    if (deletedPlaylists.length === 0) {
+      return (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Trash2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+              No deleted playlists
+            </h3>
+            <p className="text-muted-foreground">
+              Deleted playlists will appear here for 7 days before being permanently removed.
+            </p>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {deletedPlaylists.map((playlist) => (
+          <Card key={playlist.id} className="border-red-200 dark:border-red-800">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="bg-muted p-3 rounded-lg">
+                  <ListMusic className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium line-clamp-1">{playlist.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {playlist._count?.videos || 0} videos
+                  </p>
+                </div>
+              </div>
+              
+              {playlist.description && (
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  {playlist.description}
+                </p>
+              )}
+              
+              <p className="text-sm text-muted-foreground mb-3">
+                Deleted {formatDate(playlist.updatedAt)}
+              </p>
+              
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRestore(playlist.id, 'playlist')}
+                  className="flex-1 text-green-600 hover:text-green-700"
+                >
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  Restore
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handlePermanentDelete(playlist.id, 'playlist')}
+                  className="flex-1"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
 
   const renderDeletedVideos = () => {
     if (deletedVideos.length === 0) {
@@ -235,6 +315,8 @@ const Trash = () => {
     switch (activeTab) {
       case 'tweets':
         return renderDeletedTweets()
+      case 'playlists':
+        return renderDeletedPlaylists()
       case 'videos':
       case 'shorts':
         return renderDeletedVideos()

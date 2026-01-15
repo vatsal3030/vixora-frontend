@@ -81,7 +81,7 @@ export const LocalSettingsProvider = ({ children }) => {
           document.documentElement.style.setProperty('--primary', parsed.primaryColor)
         }
       } catch (error) {
-        console.error('Failed to load settings:', error)
+        // Failed to load settings
       }
     }
   }, [setTheme])

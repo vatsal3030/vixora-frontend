@@ -274,10 +274,10 @@ const CustomVideoPlayer = ({
       if (document.pictureInPictureElement) {
         await document.exitPictureInPicture()
       } else {
-        await video.requestPictureInPicture()
+        videoRef.current.requestPictureInPicture()
       }
     } catch (error) {
-      console.error('PIP error:', error)
+      // PIP error
     }
   }, [])
 
@@ -341,7 +341,8 @@ const CustomVideoPlayer = ({
         ref={videoRef}
         src={src}
         poster={poster}
-        className="w-full h-full pointer-events-none"
+        className="w-full h-full pointer-events-none outline-none border-none focus:outline-none focus:border-none focus-visible:outline-none"
+        style={{ outline: 'none', border: 'none' }}
       />
 
       {/* Clickable Overlay for Play/Pause */}

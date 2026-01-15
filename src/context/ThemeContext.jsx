@@ -18,7 +18,13 @@ export const ThemeProvider = ({ children }) => {
       effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
     
-    root.setAttribute('data-theme', effectiveTheme)
+    // Apply dark class to html element
+    if (effectiveTheme === 'dark') {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+    
     localStorage.setItem('theme', theme)
     
     // Listen for system theme changes
@@ -26,7 +32,11 @@ export const ThemeProvider = ({ children }) => {
     const handleChange = () => {
       if (theme === 'system') {
         const newTheme = mediaQuery.matches ? 'dark' : 'light'
-        root.setAttribute('data-theme', newTheme)
+        if (newTheme === 'dark') {
+          root.classList.add('dark')
+        } else {
+          root.classList.remove('dark')
+        }
       }
     }
     

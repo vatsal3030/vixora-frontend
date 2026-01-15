@@ -33,7 +33,7 @@ export const videoService = {
   togglePublish: (videoId) => api.patch(`/videos/${videoId}/publish`)
 }
 
-// Comment Service
+// Comment Service  
 export const commentService = {
   getComments: (videoId) => api.get(`/comments/${videoId}`),
   addComment: (videoId, content) => api.post(`/comments/${videoId}`, { content }),
@@ -98,13 +98,18 @@ export const feedService = {
 export const playlistService = {
   getMyPlaylists: (params = {}) => api.get('/playlists/user/me', { params }),
   getUserPlaylists: (userId, params = {}) => api.get(`/playlists/user/${userId}`, { params }),
+  getDeletedPlaylists: () => api.get('/playlists/trash/me'),
   createPlaylist: (data) => api.post('/playlists', data),
   addVideoToPlaylist: (videoId, playlistId) => api.patch(`/playlists/add/${videoId}/${playlistId}`),
   removeVideoFromPlaylist: (videoId, playlistId) => api.patch(`/playlists/remove/${videoId}/${playlistId}`),
   getPlaylist: (playlistId) => api.get(`/playlists/${playlistId}`),
   updatePlaylist: (playlistId, data) => api.patch(`/playlists/${playlistId}`, data),
   deletePlaylist: (playlistId) => api.delete(`/playlists/${playlistId}`),
-  togglePlaylistVisibility: (playlistId) => api.patch(`/playlists/${playlistId}/toggle-visibility`)
+  restorePlaylist: (playlistId) => api.patch(`/playlists/${playlistId}/restore`),
+  togglePlaylistPrivacy: (playlistId) => api.patch(`/playlists/${playlistId}/toggle-visibility`),
+  // Watch Later specific APIs
+  toggleWatchLater: (videoId) => api.post(`/playlists/watch-later/${videoId}`),
+  getWatchLater: () => api.get('/playlists/watch-later')
 }
 
 // Tweet Service

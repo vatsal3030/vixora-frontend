@@ -1,8 +1,9 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { feedService, videoService } from '../api/services'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import VideoGrid from '../components/VideoGrid'
-import VideoCardSkeleton from '../components/VideoCardSkeleton'
+import HomePageSkeleton from '../components/skeletons/HomePageSkeleton'
 import AddToPlaylistDialog from '../components/AddToPlaylistDialog'
 import CreatePlaylistDialog from '../components/CreatePlaylistDialog'
 import {
@@ -16,50 +17,43 @@ import {
 const VideoCard = lazy(() => import('../components/VideoCard'))
 
 const Home = () => {
-  const [videos, setVideos] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [sortBy, setSortBy] = useState('latest')
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(false)
   const [selectedVideoId, setSelectedVideoId] = useState(null)
+  const [key, setKey] = useState(0)
 
   useDocumentTitle(null) // Home page shows only "Vixora"
 
-  useEffect(() => {
-    fetchVideos()
-  }, [sortBy])
+  const fetchVideos = async (page) => {
+    let response
 
-  const fetchVideos = async () => {
-    try {
-      setLoading(true)
-      let response
-
-      if (sortBy === 'trending') {
-        response = await feedService.getTrendingFeed()
-      } else {
-        const params = {
-          sortBy: sortBy === 'latest' ? 'createdAt' : 'views',
-          sortType: 'desc',
-          page: 1,
-          limit: 20
-        }
-        response = await videoService.getVideos(params)
+    if (sortBy === 'trending') {
+      response = await feedService.getTrendingFeed()
+    } else {
+      const params = {
+        sortBy: sortBy === 'latest' ? 'createdAt' : 'views',
+        sortType: 'desc',
+        page,
+        limit: 20
       }
-
-      const videosData =
-        response?.data?.data?.docs ||
-        response?.data?.data?.videos ||
-        response?.data?.data ||
-        [];
-
-      setVideos(Array.isArray(videosData) ? videosData : []);
-    } catch (error) {
-      console.error('Error fetching videos:', error)
-      setError('Failed to load videos')
-    } finally {
-      setLoading(false)
+      response = await videoService.getVideos(params)
     }
+
+    const videosData =
+      response?.data?.data?.docs ||
+      response?.data?.data?.videos ||
+      response?.data?.data ||
+      [];
+
+    return Array.isArray(videosData) ? videosData : []
   }
+
+  const { data: videos, loading, error, hasMore, observerRef } = useInfiniteScroll(fetchVideos, key)
+
+  // Reset when sortBy changes
+  useEffect(() => {
+    setKey(prev => prev + 1)
+  }, [sortBy])
 
   const handleAddToPlaylist = (videoId) => {
     setSelectedVideoId(videoId)
@@ -68,21 +62,7 @@ const Home = () => {
 
 
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={fetchVideos}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <>
@@ -102,15 +82,25 @@ const Home = () => {
           </Select>
         </div>
 
-        {loading ? (
-          <VideoGrid videos={[]} loading={true} />
+        {loading && videos.length === 0 ? (
+          <HomePageSkeleton />
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 text-lg mb-4">{error}</p>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+              Try Again
+            </button>
+          </div>
         ) : videos.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">No videos found</p>
             <p className="text-muted-foreground/70 mt-2">Be the first to upload a video!</p>
           </div>
         ) : (
-          <VideoGrid videos={videos} loading={false} />
+          <>
+            <VideoGrid videos={videos} loading={false} />
+            {hasMore && <div ref={observerRef} className="h-20 flex items-center justify-center"><HomePageSkeleton /></div>}
+          </>
         )}
       </div>
 

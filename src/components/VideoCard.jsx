@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState, useRef, useCallback } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { videoService } from '../api/services'
+import { videoService, playlistService } from '../api/services'
 import { Card, CardContent } from './ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
@@ -14,7 +14,7 @@ import {
 } from './ui/dropdown-menu'
 import { formatDate } from '../utils/formatDate'
 import { formatDuration, formatViews } from '../utils/videoUtils'
-import { Eye, Clock, MoreVertical, Plus, ListPlus, Share, Copy, ExternalLink, Play, Pause, Volume2, VolumeX, Edit, Trash2 } from 'lucide-react'
+import { MoreVertical, Plus, Share, Copy, Play, Pause, Volume2, VolumeX, Edit, Trash2, Clock } from 'lucide-react'
 import PlaylistModal from './PlaylistModal'
 import { toast } from 'sonner'
 
@@ -31,17 +31,29 @@ const VideoCard = ({
   const { user } = useAuth()
   const [showPreview, setShowPreview] = useState(false)
   const [showPlaylistModal, setShowPlaylistModal] = useState(false)
-  const [message, setMessage] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [isInWatchLater, setIsInWatchLater] = useState(false)
   const hoverTimeoutRef = useRef(null)
   const videoRef = useRef(null)
 
-  const handlePlaylistSuccess = (msg, type = 'success') => {
-    setMessage(msg)
-    setTimeout(() => setMessage(''), 3000)
+  const handlePlaylistSuccess = () => {
+    // Refresh or update UI if needed
+  }
+
+  const handleWatchLaterToggle = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    try {
+      const response = await playlistService.toggleWatchLater(video.id)
+      const saved = response?.data?.data?.saved
+      setIsInWatchLater(saved)
+      toast.success(saved ? 'Saved to Watch Later' : 'Removed from Watch Later')
+    } catch (error) {
+      toast.error('Failed to update Watch Later')
+    }
   }
 
   const handleShare = (platform) => {
@@ -116,7 +128,7 @@ const VideoCard = ({
       videoRef.current.muted = isMuted
       videoRef.current.play().then(() => {
         setIsPlaying(true)
-      }).catch(console.error)
+      }).catch(() => {})
     }
   }
 
@@ -293,14 +305,10 @@ const VideoCard = ({
                   </>
                 )}
                 <DropdownMenuItem 
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setShowPlaylistModal(true)
-                  }}
+                  onClick={handleWatchLaterToggle}
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add to playlist
+                  <Clock className="mr-2 h-4 w-4" />
+                  {isInWatchLater ? 'Remove from Watch Later' : 'Save to Watch Later'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <div className="p-2">
@@ -343,10 +351,17 @@ const VideoCard = ({
                     </button>
                   </div>
                 </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  Save to Watch Later
+                <DropdownMenuItem 
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setShowPlaylistModal(true)
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add to playlist
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -395,13 +410,6 @@ const VideoCard = ({
           </div>
         </div>
       </CardContent>
-      
-      {/* Success/Error Message */}
-      {message && (
-        <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
-          {message}
-        </div>
-      )}
       
       {/* Playlist Modal */}
       <PlaylistModal

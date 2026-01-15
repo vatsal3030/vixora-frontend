@@ -10,7 +10,7 @@ const PrivacySettings = () => {
   const { accountSettings, updateAccountSetting, uiPreferences, updateUIPreference } = useSettings()
 
   const handleClearHistory = () => {
-    console.log('History cleared')
+    // History cleared
   }
 
   return (

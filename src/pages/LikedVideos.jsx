@@ -21,7 +21,6 @@ const LikedVideos = () => {
     try {
       setLoading(true)
       const response = await likeService.getLikedVideos()
-      console.log('Liked videos response:', response.data)
       
       // Handle different response structures
       let videosData = []
@@ -40,7 +39,6 @@ const LikedVideos = () => {
 
       setVideos(Array.isArray(videosData) ? videosData : [])
     } catch (error) {
-      console.error('Error fetching liked videos:', error)
       setError('Failed to load liked videos')
     } finally {
       setLoading(false)

@@ -89,7 +89,7 @@ const AccountSettings = () => {
     } catch (error) {
       setSaveStatus('error')
       toast.error('Update Failed', error.response?.data?.message || 'Failed to update profile')
-      console.error('Failed to update profile:', error)
+      // Failed to update profile
       setTimeout(() => setSaveStatus(null), 3000)
     } finally {
       setLoading(false)
@@ -122,7 +122,7 @@ const AccountSettings = () => {
       setTimeout(() => setSaveStatus(null), 3000)
     } catch (error) {
       setErrors({ currentPassword: 'Current password is incorrect' })
-      console.error('Failed to change password:', error)
+      // Failed to change password
     } finally {
       setLoading(false)
     }
@@ -158,7 +158,7 @@ const AccountSettings = () => {
       setTimeout(() => setSaveStatus(null), 3000)
     } catch (error) {
       setErrors({ avatar: 'Failed to update profile picture' })
-      console.error('Failed to update avatar:', error)
+      // Failed to update avatar
     } finally {
       setUploadingAvatar(false)
     }

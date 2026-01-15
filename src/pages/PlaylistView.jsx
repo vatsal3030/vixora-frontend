@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { playlistService } from '../api/services'
 import { Button } from '../components/ui/button'
 import { Card, CardContent } from '../components/ui/card'
-import { Play, Lock, Globe, Clock, Eye } from 'lucide-react'
+import { Play, Lock, Globe, Plus, X } from 'lucide-react'
 import Loader from '../components/Loader'
+import { toast } from 'sonner'
 
 const PlaylistView = () => {
   const { playlistId } = useParams()
+  const navigate = useNavigate()
   const [playlist, setPlaylist] = useState(null)
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -19,16 +21,48 @@ const PlaylistView = () => {
     }
   }, [playlistId])
 
+  useEffect(() => {
+    // Start from first video when playlist loads
+    if (playlist?.videos?.length > 0) {
+      setCurrentVideoIndex(0)
+    }
+  }, [playlist])
+
   const fetchPlaylist = async () => {
     try {
       setLoading(true)
       const response = await playlistService.getPlaylist(playlistId)
-      setPlaylist(response.data.data)
+      const data = response.data.data
+      // Deduplicate videos by ID
+      const uniqueVideos = data.videos?.reduce((acc, video) => {
+        if (!acc.find(v => v.id === video.id)) {
+          acc.push(video)
+        }
+        return acc
+      }, []) || []
+      setPlaylist({ ...data, videos: uniqueVideos })
+      setError('')
     } catch (error) {
-      console.error('Error fetching playlist:', error)
       setError('Failed to load playlist')
+      toast.error('Failed to load playlist')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleRemoveVideo = async (videoId) => {
+    try {
+      await playlistService.removeVideoFromPlaylist(videoId, playlistId)
+      setPlaylist(prev => ({
+        ...prev,
+        videos: prev.videos.filter(v => v.id !== videoId)
+      }))
+      toast.success('Video removed from playlist')
+      if (currentVideoIndex >= playlist.videos.length - 1) {
+        setCurrentVideoIndex(Math.max(0, playlist.videos.length - 2))
+      }
+    } catch (error) {
+      toast.error('Failed to remove video')
     }
   }
 
@@ -67,20 +101,23 @@ const PlaylistView = () => {
     )
   }
 
-  const currentVideo = playlist.videos?.[currentVideoIndex]
+  const currentVideo = playlist?.videos?.[currentVideoIndex]
+  const hasVideos = playlist?.videos?.length > 0
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Video Player Section */}
         <div className="lg:col-span-2">
-          {currentVideo ? (
+          {hasVideos ? (
             <div className="space-y-4">
               {/* Video Player */}
               <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                {currentVideo.videoFile ? (
+                {currentVideo?.videoFile ? (
                   <video
+                    key={currentVideo.id}
                     controls
+                    autoPlay
                     className="w-full h-full"
                     poster={currentVideo.thumbnail}
                   >
@@ -96,15 +133,15 @@ const PlaylistView = () => {
 
               {/* Video Info */}
               <div>
-                <h1 className="text-xl font-bold mb-2">{currentVideo.title}</h1>
+                <h1 className="text-xl font-bold mb-2">{currentVideo?.title}</h1>
                 <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-4">
-                  <span>{formatViews(currentVideo.views)}</span>
+                  <span>{formatViews(currentVideo?.views)}</span>
                   <span>•</span>
-                  <span>{new Date(currentVideo.createdAt).toLocaleDateString()}</span>
+                  <span>{new Date(currentVideo?.createdAt).toLocaleDateString()}</span>
                 </div>
                 
                 {/* Channel Info */}
-                {currentVideo.owner && (
+                {currentVideo?.owner && (
                   <Link 
                     to={`/channel/${currentVideo.owner.id}`}
                     className="flex items-center space-x-3 mb-4"
@@ -122,7 +159,7 @@ const PlaylistView = () => {
                 )}
 
                 {/* Description */}
-                {currentVideo.description && (
+                {currentVideo?.description && (
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-sm whitespace-pre-wrap">{currentVideo.description}</p>
                   </div>
@@ -130,8 +167,16 @@ const PlaylistView = () => {
               </div>
             </div>
           ) : (
-            <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-              <p className="text-muted-foreground">No videos in this playlist</p>
+            <div className="aspect-video bg-muted rounded-lg flex flex-col items-center justify-center p-8">
+              <Play className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No videos in this playlist</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                This playlist is empty. Add videos to start watching.
+              </p>
+              <Button onClick={() => navigate('/')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Browse Videos
+              </Button>
             </div>
           )}
         </div>
@@ -159,7 +204,7 @@ const PlaylistView = () => {
                 
                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                   <span>{playlist.videos?.length || 0} videos</span>
-                  {playlist.owner && (
+                  {!playlist.isWatchLater && playlist.owner && (
                     <>
                       <span>•</span>
                       <Link 
@@ -174,16 +219,18 @@ const PlaylistView = () => {
               </div>
 
               {/* Video List */}
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="space-y-2 max-h-[600px] overflow-y-auto">
                 {playlist.videos?.map((video, index) => (
                   <div
-                    key={video.id}
-                    className={`flex space-x-3 p-2 rounded cursor-pointer hover:bg-muted transition-colors ${
+                    key={`${video.id}-${index}`}
+                    className={`flex space-x-3 p-2 rounded hover:bg-muted transition-colors group ${
                       index === currentVideoIndex ? 'bg-muted' : ''
                     }`}
-                    onClick={() => setCurrentVideoIndex(index)}
                   >
-                    <div className="relative flex-shrink-0">
+                    <div 
+                      className="relative flex-shrink-0 cursor-pointer"
+                      onClick={() => setCurrentVideoIndex(index)}
+                    >
                       <img
                         src={video.thumbnail}
                         alt={video.title}
@@ -201,7 +248,10 @@ const PlaylistView = () => {
                       )}
                     </div>
                     
-                    <div className="flex-1 min-w-0">
+                    <div 
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => setCurrentVideoIndex(index)}
+                    >
                       <h4 className="text-sm font-medium line-clamp-2 mb-1">
                         {video.title}
                       </h4>
@@ -211,13 +261,31 @@ const PlaylistView = () => {
                         <span>{formatViews(video.views)}</span>
                       </div>
                     </div>
+
+                    {!playlist.isWatchLater && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleRemoveVideo(video.id)
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
 
-              {playlist.videos?.length === 0 && (
+              {!hasVideos && (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">No videos in this playlist</p>
+                  <p className="text-muted-foreground mb-4">No videos in this playlist</p>
+                  <Button size="sm" onClick={() => navigate('/')}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Videos
+                  </Button>
                 </div>
               )}
             </CardContent>

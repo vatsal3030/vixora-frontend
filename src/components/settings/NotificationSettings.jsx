@@ -9,7 +9,7 @@ const NotificationSettings = () => {
   const { accountSettings, updateAccountSetting } = useSettings()
 
   const handleTestNotification = () => {
-    console.log('Test notification sent')
+    // Test notification sent
   }
 
   return (

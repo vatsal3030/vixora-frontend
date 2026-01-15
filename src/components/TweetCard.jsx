@@ -22,7 +22,7 @@ const TweetCard = ({ tweet, onDelete, onUpdate }) => {
       setIsLiked(newIsLiked)
       setLikesCount(prev => newIsLiked ? prev + 1 : Math.max(prev - 1, 0))
     } catch (error) {
-      console.error('Error toggling tweet like:', error)
+      // Error toggling tweet like
     } finally {
       setLoading(false)
     }
@@ -35,7 +35,7 @@ const TweetCard = ({ tweet, onDelete, onUpdate }) => {
       await tweetService.deleteTweet(tweet.id)
       onDelete(tweet.id)
     } catch (error) {
-      console.error('Error deleting tweet:', error)
+      // Error deleting tweet
     }
   }
 

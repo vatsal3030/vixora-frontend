@@ -8,6 +8,11 @@ import { Textarea } from '../components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
 import { Card, CardContent } from '../components/ui/card'
 import CustomVideoPlayer from '../components/CustomVideoPlayer'
+import ButtonPrimary from '../components/ui/ButtonPrimary'
+import ButtonSecondary from '../components/ui/ButtonSecondary'
+import ButtonIcon from '../components/ui/ButtonIcon'
+import VideoDescription from '../components/video/VideoDescription'
+import CommentSkeleton from '../components/skeletons/CommentSkeleton'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,7 +60,7 @@ const Video = () => {
       const progress = response?.data?.data?.progress || 0
       setWatchProgress(progress)
     } catch (error) {
-      console.log('No previous watch progress found')
+      // No previous watch progress found
     }
   }
 
@@ -314,22 +319,20 @@ const Video = () => {
 
               {/* Action Buttons - Mobile Optimized */}
               <div className="flex items-center gap-2">
-                <Button
-                  variant={isLiked ? "default" : "outline"}
-                  size="sm"
+                <ButtonSecondary
                   onClick={handleLike}
-                  className={`flex items-center gap-2 h-10 px-4 text-sm rounded-full bg-secondary hover:bg-secondary/80 ${isLiked ? 'text-primary' : ''}`}
+                  className={isLiked ? 'bg-primary hover:bg-primary/90' : ''}
                 >
-                  <ThumbsUp className="h-5 w-5" />
+                  <ThumbsUp className="w-5 h-5" strokeWidth={2} />
                   <span>{video.likesCount || 0}</span>
-                </Button>
+                </ButtonSecondary>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-10 px-4 text-sm rounded-full bg-secondary hover:bg-secondary/80 flex items-center gap-2">
-                      <Share className="h-5 w-5" />
+                    <ButtonSecondary>
+                      <Share className="w-5 h-5" strokeWidth={2} />
                       Share
-                    </Button>
+                    </ButtonSecondary>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <div className="p-2">
@@ -366,7 +369,7 @@ const Video = () => {
                           className="flex flex-col items-center p-3 rounded-lg hover:bg-accent transition-colors"
                         >
                           <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center mb-1">
-                            <Copy className="h-4 w-4 text-white" />
+                            <Copy className="w-4 h-4 text-white" />
                           </div>
                           <span className="text-xs">Copy Link</span>
                         </button>
@@ -377,9 +380,9 @@ const Video = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-10 w-10 p-0 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center">
-                      <MoreVertical className="h-5 w-5" />
-                    </Button>
+                    <ButtonIcon title="More options">
+                      <MoreVertical className="w-5 h-5" strokeWidth={2} />
+                    </ButtonIcon>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>
@@ -416,52 +419,43 @@ const Video = () => {
 
                   {video.owner?.id !== user?.id && (
                     <div className="flex items-center gap-2">
-                      <Button
-                        onClick={handleSubscribe}
-                        variant={isSubscribed ? "outline" : "default"}
-                        size="sm"
-                        className={`flex-shrink-0 h-9 px-6 rounded-full font-semibold flex items-center gap-2 ${
-                          isSubscribed ? 'bg-secondary hover:bg-secondary/80' : 'bg-primary hover:bg-primary/90'
-                        }`}
-                      >
-                        {isSubscribed ? 'Subscribed' : 'Subscribe'}
-                      </Button>
+                      {isSubscribed ? (
+                        <ButtonSecondary onClick={handleSubscribe}>
+                          Subscribed
+                        </ButtonSecondary>
+                      ) : (
+                        <ButtonPrimary onClick={handleSubscribe}>
+                          Subscribe
+                        </ButtonPrimary>
+                      )}
                       
                       {isSubscribed && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-9 px-3 rounded-full flex items-center space-x-1"
-                            >
-                              <Bell className={`h-4 w-4 ${notificationLevel !== 'NONE' ? 'fill-current' : ''}`} />
-                              <span className="text-xs">
-                                {notificationLevel === 'ALL' ? 'All' : 
-                                 notificationLevel === 'PERSONALIZED' ? 'Personalized' : 'None'}
-                              </span>
-                            </Button>
+                            <ButtonIcon title="Notification settings">
+                              <Bell className={`w-5 h-5 ${notificationLevel !== 'NONE' ? 'fill-current' : ''}`} strokeWidth={2} />
+                            </ButtonIcon>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem 
                               onClick={() => handleNotificationChange('ALL')}
                               className={notificationLevel === 'ALL' ? 'bg-accent' : ''}
                             >
-                              <Bell className="h-4 w-4 mr-2 fill-current" />
+                              <Bell className="w-4 h-4 mr-2 fill-current" />
                               All notifications
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleNotificationChange('PERSONALIZED')}
                               className={notificationLevel === 'PERSONALIZED' ? 'bg-accent' : ''}
                             >
-                              <Bell className="h-4 w-4 mr-2" />
+                              <Bell className="w-4 h-4 mr-2" />
                               Personalized
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleNotificationChange('NONE')}
                               className={notificationLevel === 'NONE' ? 'bg-accent' : ''}
                             >
-                              <Bell className="h-4 w-4 mr-2 opacity-50" />
+                              <Bell className="w-4 h-4 mr-2 opacity-50" />
                               None
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -475,13 +469,9 @@ const Video = () => {
 
             {/* Description - Mobile Optimized */}
             {video.description && (
-              <Card className="mb-4 mx-3 sm:mx-0 bg-card/50">
-                <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3 sm:line-clamp-none leading-relaxed">
-                    {video.description}
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="mx-3 sm:mx-0 mb-4">
+                <VideoDescription description={video.description} maxLines={3} />
+              </div>
             )}
 
             {/* Comments Section - Mobile Optimized */}
