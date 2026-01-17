@@ -28,6 +28,28 @@ const Login = () => {
   const location = useLocation()
   const loginMessage = location.state?.message
 
+  // Handle OAuth error from URL query params
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const errorParam = searchParams.get('error')
+    
+    if (errorParam) {
+      // Decode and show error
+      const decodedError = decodeURIComponent(errorParam)
+      const friendlyMessage = decodedError === 'google_auth_failed' 
+        ? 'Google authentication failed. Please try again.'
+        : decodedError
+      
+      toast.error(friendlyMessage)
+      
+      // Remove error from URL
+      searchParams.delete('error')
+      const newSearch = searchParams.toString()
+      const newUrl = newSearch ? `${location.pathname}?${newSearch}` : location.pathname
+      navigate(newUrl, { replace: true })
+    }
+  }, [location.search, location.pathname, navigate])
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/')
