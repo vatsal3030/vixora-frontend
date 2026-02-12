@@ -33,8 +33,8 @@ const Tweets = () => {
       const response = await tweetService.getUserTweets(user.id)
       const tweetsData = response?.data?.data || []
       setTweets(Array.isArray(tweetsData) ? tweetsData : [])
-    } catch (error) {
-      console.error('Error fetching tweets:', error)
+    } catch {
+      // Ignore fetch errors and render empty state.
     } finally {
       setLoading(false)
     }
@@ -73,8 +73,8 @@ const Tweets = () => {
       setTweets(prev => [tweetData, ...prev])
       setNewTweet('')
       removeImage()
-    } catch (error) {
-      console.error('Error creating tweet:', error)
+    } catch {
+      // Keep form state so user can retry.
     } finally {
       setPosting(false)
     }

@@ -25,7 +25,6 @@ export function useInfiniteScroll(fetchFunction, key = 0, initialLimit = 20) {
         setHasMore(false)
       }
     } catch (err) {
-      console.error('Load error:', err)
       setError(err?.message || 'Failed to load data')
       if (currentPage === 1) setData([])
       setHasMore(false)

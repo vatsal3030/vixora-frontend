@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.getCurrentUser()
       setUser(response.data.data)
-    } catch (error) {
+    } catch {
       // Don't log auth check failures to avoid spam
       setUser(null)
     } finally {
@@ -38,8 +38,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout()
-    } catch (error) {
-      console.error('Logout error:', error)
+    } catch {
+      // Ignore logout API failures and clear local auth state.
     } finally {
       setUser(null)
     }

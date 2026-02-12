@@ -59,7 +59,7 @@ const Video = () => {
       const response = await watchHistoryService.getWatchProgress(videoId)
       const progress = response?.data?.data?.progress || 0
       setWatchProgress(progress)
-    } catch (error) {
+    } catch {
       // No previous watch progress found
     }
   }
@@ -70,8 +70,8 @@ const Video = () => {
       const videoData = response?.data?.data || {}
       setVideo(videoData)
       setIsLiked(videoData.isLiked || false)
-    } catch (error) {
-      console.error('Error fetching video:', error)
+    } catch {
+      // Ignore fetch errors; loading and fallback UI handle the state.
     } finally {
       setLoading(false)
     }
@@ -85,8 +85,8 @@ const Video = () => {
       const data = response?.data?.data || {}
       setIsSubscribed(data.isSubscribed || false)
       setNotificationLevel(data.notificationLevel || 'NONE')
-    } catch (error) {
-      console.error('Error fetching subscription status:', error)
+    } catch {
+      // Ignore subscription status errors and keep existing values.
     }
   }
 
@@ -96,8 +96,8 @@ const Video = () => {
       const commentsData = response?.data?.data || []
       const sortedComments = sortComments(Array.isArray(commentsData) ? commentsData : [])
       setComments(sortedComments)
-    } catch (error) {
-      console.error('Error fetching comments:', error)
+    } catch {
+      // Ignore comments fetch errors and keep existing comments.
     }
   }
 
@@ -127,8 +127,7 @@ const Video = () => {
         likesCount: newIsLiked ? (prev.likesCount || 0) + 1 : Math.max((prev.likesCount || 0) - 1, 0),
         isLiked: newIsLiked
       }))
-    } catch (error) {
-      console.error('Error toggling like:', error)
+    } catch {
       setIsLiked(isLiked)
     }
   }
@@ -150,8 +149,8 @@ const Video = () => {
       if (!data.isSubscribed) {
         setNotificationLevel('NONE')
       }
-    } catch (error) {
-      console.error('Error toggling subscription:', error)
+    } catch {
+      // Ignore subscription toggle errors.
     }
   }
 
@@ -159,8 +158,8 @@ const Video = () => {
     try {
       await subscriptionService.setNotificationLevel(video.owner.id, level)
       setNotificationLevel(level)
-    } catch (error) {
-      console.error('Error updating notification level:', error)
+    } catch {
+      // Ignore notification update errors.
     }
   }
 
@@ -213,8 +212,8 @@ const Video = () => {
         ...prev,
         commentsCount: (prev.commentsCount || 0) + 1
       }))
-    } catch (error) {
-      console.error('Error adding comment:', error)
+    } catch {
+      // Ignore comment submission errors.
     } finally {
       setCommentLoading(false)
     }
@@ -247,8 +246,8 @@ const Video = () => {
         progress: Math.round(progress),
         duration: Math.round(video?.duration || 0)
       })
-    } catch (error) {
-      console.error('Failed to save progress:', error)
+    } catch {
+      // Ignore progress save errors.
     }
   }
 

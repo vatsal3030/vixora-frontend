@@ -212,8 +212,7 @@ export const SettingsProvider = ({ children }) => {
       const dbSettings = response.data.data
       
       dispatch({ type: 'LOAD_SETTINGS', payload: dbSettings })
-    } catch (error) {
-      console.error('Failed to load settings:', error)
+    } catch {
       dispatch({ type: 'SET_ERROR', error: 'Failed to load settings' })
     }
   }, [user])

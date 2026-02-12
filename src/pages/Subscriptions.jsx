@@ -35,8 +35,7 @@ const Subscriptions = () => {
         [];
 
       setVideos(Array.isArray(videosData) ? videosData : []);
-    } catch (error) {
-      console.error('Error fetching subscription videos:', error)
+    } catch {
       setError('Failed to load subscription videos')
     } finally {
       setLoading(false)
@@ -49,8 +48,8 @@ const Subscriptions = () => {
       const response = await subscriptionService.getSubscriptions()
       const channelsData = response?.data?.data || []
       setChannels(Array.isArray(channelsData) ? channelsData : [])
-    } catch (error) {
-      console.error('Error fetching subscribed channels:', error)
+    } catch {
+      // Ignore channel fetch errors and keep current state.
     } finally {
       setChannelsLoading(false)
     }
